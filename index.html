@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRM CafeBin - Quản Lý Nhân Sự Nội Bộ</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Hamburger Overlay Backdrop -->
+    <div id="drawer-overlay" class="drawer-overlay hidden"></div>
+
+    <!-- Side Navigation Drawer -->
+    <aside id="side-drawer" class="side-drawer">
+        <div class="drawer-header">
+            <button id="close-drawer-btn" class="drawer-close-btn">&times;</button>
+            <div class="drawer-user-profile">
+                <div class="avatar-circle" id="drawer-avatar">NV</div>
+                <h3 id="drawer-user-name">Đang tải...</h3>
+                <p id="drawer-user-code" class="drawer-user-code">Mã NV: ---</p>
+                <div class="drawer-badges">
+                    <span id="drawer-user-role" class="role-badge">Nhân viên</span>
+                    <span id="drawer-user-branch" class="branch-badge">Trụ sở chính</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="drawer-nav">
+            <ul>
+                <li><a href="#" class="nav-link active" data-target="dashboard-screen"><span class="nav-icon">🏠</span> Trang Chủ</a></li>
+                <li><a href="#" class="nav-link" data-target="dashboard-screen" data-scroll="clockin-section"><span class="nav-icon">⏱️</span> Chấm Công Nội Bộ</a></li>
+                <li><a href="#" class="nav-link" data-target="shift-register-screen"><span class="nav-icon">📝</span> Đăng Ký Ca Làm</a></li>
+                <li><a href="#" class="nav-link" data-target="schedule-screen"><span class="nav-icon">🗓️</span> Lịch Làm Việc</a></li>
+                <li><a href="#" class="nav-link" data-target="feature-placeholder-screen" data-feature="Bảng Công & Tính Lương"><span class="nav-icon">📊</span> Bảng Công & Tính Lương</a></li>
+                <li><a href="#" class="nav-link" data-target="profile-screen"><span class="nav-icon">👤</span> Hồ Sơ Cá Nhân</a></li>
+                <li><a href="#" class="nav-link admin-only" data-target="admin-screen" data-tab="tab-announcements"><span class="nav-icon">📢</span> Kênh Truyền Thông</a></li>
+                <li><a href="#" class="nav-link admin-only" data-target="admin-screen" data-tab="tab-branches"><span class="nav-icon">🏬</span> Quản Lý Chi Nhánh</a></li>
+                <li><a href="#" class="nav-link admin-only" data-target="admin-screen" data-tab="tab-employees"><span class="nav-icon">👥</span> Quản Lý Nhân Sự</a></li>
+                <li><a href="#" class="nav-link admin-only" data-target="admin-screen" data-tab="tab-shift-arrange"><span class="nav-icon">🗓️</span> Sắp Xếp Ca Trực</a></li>
+            </ul>
+        </nav>
+
+        <div class="drawer-footer">
+            <button id="drawer-logout-btn" class="btn-logout-drawer">
+                <span>🚪</span> Đăng Xuất Tài Khoản
+            </button>
+        </div>
+    </aside>
+
+    <div class="app-container" id="app">
+        <!-- Top Navigation Header (Post-Login Header Bar) -->
+        <header id="top-header" class="top-header hidden">
+            <div class="header-left">
+                <button id="hamburger-toggle-btn" class="hamburger-btn" aria-label="Mở Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="header-brand">
+                    <span class="brand-logo">☕</span>
+                    <span class="brand-text">CafeBin <small>HRM</small></span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-time" id="header-clock-display">00:00:00</div>
+                <div class="header-user-pill" id="header-user-profile-btn">
+                    <div class="avatar-mini" id="header-avatar">NV</div>
+                    <span class="user-shortname" id="header-user-name">Nhân viên</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Announcement Banner -->
+        <div id="announcement-banner" class="hidden">
+            <div class="announcement-content">
+                <span class="announcement-icon">📢</span>
+                <div>
+                    <strong id="announcement-title">Thông báo</strong>: <span id="announcement-text"></span>
+                </div>
+            </div>
+            <button id="close-announcement-btn" class="close-btn">&times;</button>
+        </div>
+
+        <!-- 1. Login Screen -->
+        <div id="login-screen" class="screen login-container">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="brand-badge">☕ HRM BIN COFFEE</div>
+                    <h1 class="card-title">Đăng Nhập</h1>
+                    <p class="card-subtitle">Hệ thống quản trị nhân sự nội bộ offline</p>
+                </div>
+                
+                <form id="login-form">
+                    <div class="form-group">
+                        <label class="form-label">Mã Nhân Viên</label>
+                        <input type="text" id="userCode" class="form-input" required placeholder="Nhập mã NV (VD: admin hoặc NV01)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mã PIN</label>
+                        <input type="password" id="pin" class="form-input" required placeholder="Nhập mã PIN (VD: 123456)">
+                    </div>
+                    <button type="submit" class="btn-primary">Truy Cập Hệ Thống</button>
+                    <p id="login-error" class="error-msg"></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. Main Homepage / Dashboard Screen (Post-Login) -->
+        <div id="dashboard-screen" class="screen hidden">
+            <!-- Hero Clock-In/Out Card -->
+            <div class="glass-card clockin-hero-card" id="clockin-section">
+                <div class="hero-top-info">
+                    <div>
+                        <span class="badge-branch-tag" id="home-branch-tag">📍 Trụ sở chính</span>
+                        <h2 class="welcome-heading">Xin chào, <span id="user-name-display">Nhân viên</span> 👋</h2>
+                    </div>
+                    <div class="live-status-pill" id="current-status-pill">
+                        <span class="status-dot"></span>
+                        <span id="current-status">Chưa vào ca</span>
+                    </div>
+                </div>
+
+                <div class="status-clock-box">
+                    <p id="clockin-time" class="clockin-time-text"></p>
+                    <div class="actions">
+                        <button id="btn-clock-in" class="action-btn clock-in-btn" onclick="openClockInModal()">
+                            <span class="btn-icon">⏱️</span> BẤM VÀO CA
+                        </button>
+                        <button id="btn-clock-out" class="action-btn clock-out-btn hidden">
+                            <span class="btn-icon">🚪</span> BẤM TAN CA
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Grid (8 Core Modules) -->
+            <div class="section-title">
+                <h3>⚡ Bảng Chức Năng Trung Tâm</h3>
+                <p>Truy cập nhanh các phân hệ quản trị nhân sự</p>
+            </div>
+
+            <div class="quick-actions-grid">
+                <div class="action-tile" data-action="clockin">
+                    <div class="tile-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">⏱️</div>
+                    <div class="tile-info">
+                        <h4>1. Chấm Công Nội Bộ</h4>
+                        <p>Xác thực Wi-Fi nội bộ tại quán</p>
+                    </div>
+                    <span class="tile-arrow">➔</span>
+                </div>
+
+                <div class="action-tile" data-action="shift-reg">
+                    <div class="tile-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">📝</div>
+                    <div class="tile-info">
+                        <h4>2. Đăng Ký Ca Làm</h4>
+                        <p>Đăng ký & đổi ca linh hoạt</p>
+                    </div>
+                    <span class="tile-arrow">➔</span>
+                </div>
+
+                <div class="action-tile" data-action="schedule">
+                    <div class="tile-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">🗓️</div>
+                    <div class="tile-info">
+                        <h4>3. Lịch Làm Việc</h4>
+                        <p>Xem sơ đồ phân ca hàng tuần</p>
+                    </div>
+                    <span class="tile-arrow">➔</span>
+                </div>
+
+                <div class="action-tile" data-action="timecard">
+                    <div class="tile-icon" style="background: rgba(236, 72, 153, 0.15); color: #f472b6;">📊</div>
+                    <div class="tile-info">
+                        <h4>4. Bảng Công & Lương</h4>
+                        <p>Tự động tổng hợp giờ công & tạm tính</p>
+                    </div>
+                    <span class="tile-arrow">➔</span>
+                </div>
+
+                <div class="action-tile" data-action="profile">
+                    <div class="tile-icon" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">👤</div>
+                    <div class="tile-info">
+                        <h4>5. Hồ Sơ Cá Nhân</h4>
+                        <p>Thông tin tài khoản & ngân hàng</p>
+                    </div>
+                    <span class="tile-arrow">➔</span>
+                </div>
+
+                <div class="action-tile admin-only-tile" data-action="announcements">
+                    <div class="tile-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">📢</div>
+                    <div class="tile-info">
+                        <h4>6. Truyền Thông Nội Bộ</h4>
+                        <p>Đăng thông báo khẩn cho toàn chuỗi</p>
+                    </div>
+                    <span class="tile-arrow">➔</span>
+                </div>
+
+                <div class="action-tile admin-only-tile" data-action="branches">
+                    <div class="tile-icon" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">🏬</div>
+                    <div class="tile-info">
+                        <h4>7. Quản Lý Chi Nhánh</h4>
+                        <p>Phân vùng dữ liệu chuỗi cơ sở</p>
+                    </div>
+                    <span class="tile-arrow">➔</span>
+                </div>
+
+                <div class="action-tile admin-only-tile" data-action="employees">
+                    <div class="tile-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">👥</div>
+                    <div class="tile-info">
+                        <h4>8. Quản Lý Nhân Sự</h4>
+                        <p>Cấp mã PIN, thêm mới & khóa NV</p>
+                    </div>
+                    <span class="tile-arrow">➔</span>
+                </div>
+
+                <div class="action-tile admin-only-tile" data-action="shift-arrange">
+                    <div class="tile-icon" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">📅</div>
+                    <div class="tile-info">
+                        <h4>9. Sắp Xếp Ca Trực</h4>
+                        <p>Chốt ca làm việc cho nhân viên</p>
+                    </div>
+                    <span class="tile-arrow">➔</span>
+                </div>
+            </div>
+
+            <!-- Real-time Active Staff Snippet -->
+            <div class="glass-card" style="margin-top: 28px;">
+                <div class="card-header-flex">
+                    <h3>👥 Đồng Nghiệp Đang Trong Ca</h3>
+                    <span class="live-tag">REALTIME LAN</span>
+                </div>
+                <ul id="home-working-list" class="employee-list">
+                    <li>Đang tải danh sách...</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 3. Profile Screen Preview -->
+        <div id="profile-screen" class="screen hidden">
+            <div class="glass-card">
+                <div class="card-header-flex" style="margin-bottom: 24px;">
+                    <h2>👤 Hồ Sơ Nhân Viên</h2>
+                    <button class="btn-secondary back-to-home-btn">← Quay lại trang chủ</button>
+                </div>
+                
+                <div class="user-profile-header">
+                    <div class="avatar-placeholder" id="profile-avatar-lg">NV</div>
+                    <h3 className="profile-name" id="profile-name-lg">---</h3>
+                    <p class="profile-email" id="profile-role-lg">Mã NV: --- | Vai trò: ---</p>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">📍 Chi nhánh làm việc:</span>
+                        <span class="info-value" id="profile-branch-val">Trụ sở chính</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📱 Số điện thoại:</span>
+                        <span class="info-value" id="profile-phone-val">Chưa cập nhật</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">💳 Tài khoản Ngân hàng:</span>
+                        <span class="info-value" id="profile-bank-val">Chưa cập nhật</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">💵 Mức lương thời gian:</span>
+                        <span class="info-value" id="profile-wage-val">Theo hợp đồng ca</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Admin & Manager Management Screen -->
+        <div id="admin-screen" class="screen hidden">
+            <div class="glass-card">
+                <div class="card-header-flex" style="margin-bottom: 20px;">
+                    <div>
+                        <h2>🛠️ Trung Tâm Quản Lý Hệ Thống</h2>
+                        <p style="color: var(--text-secondary); font-size: 13px;">Dành riêng cho Admin & Quản Lý chi nhánh</p>
+                    </div>
+                    <button class="btn-secondary back-to-home-btn">← Quay lại trang chủ</button>
+                </div>
+            
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="tab-realtime">👥 Theo dõi Realtime</button>
+                    <button class="tab-btn" data-tab="tab-employees">👥 Quản lý Nhân sự</button>
+                    <button class="tab-btn" data-tab="tab-branches">🏬 Quản lý Chi nhánh</button>
+                    <button class="tab-btn" data-tab="tab-positions">💼 Quản lý Chức vụ</button>
+                    <button class="tab-btn" data-tab="tab-shift-arrange">🗓️ Sắp Xếp Ca</button>
+                    <button class="tab-btn" data-tab="tab-announcements">📢 Đăng Truyền Thông</button>
+                </div>
+
+                <main>
+                    <!-- Tab: Realtime -->
+                    <div id="tab-realtime" class="tab-content active">
+                        <div style="margin-bottom: 24px;">
+                            <h3 style="margin-bottom: 16px;">👥 Danh Sách Nhân Viên Đang Làm Việc</h3>
+                            <ul id="working-employees-list" class="employee-list">
+                                <!-- Danh sách js render -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Shift Arrange -->
+                    <div id="tab-shift-arrange" class="tab-content hidden">
+                        <div style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3>🗓️ Sắp Xếp Lịch Làm Việc Tuần Tới</h3>
+                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                    <select id="arrange-branch-select" class="form-input" style="width: auto; min-width: 150px;">
+                                        <option value="">Chọn chi nhánh...</option>
+                                    </select>
+                                    <div style="display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                                        <button type="button" class="btn-small btn-secondary" onclick="changeWeek('arrange-start-date', -7, loadArrangementMatrix)" style="padding: 8px 12px; font-weight: bold;">◀ Tuần Trước</button>
+                                        <input type="date" id="arrange-start-date" class="form-input" style="width: auto; border: none; background: transparent; padding: 4px 8px; text-align: center;" readonly>
+                                        <button type="button" class="btn-small btn-secondary" onclick="changeWeek('arrange-start-date', 7, loadArrangementMatrix)" style="padding: 8px 12px; font-weight: bold;">Tuần Sau ▶</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="matrix-table" id="arrange-matrix">
+                                    <thead>
+                                        <tr id="arrange-matrix-head">
+                                            <th>Ca Làm Việc</th>
+                                            <!-- T2, T3... sẽ render bằng JS -->
+                                        </tr>
+                                    </thead>
+                                    <tbody id="arrange-matrix-body">
+                                        <!-- Danh sách ca và người đăng ký sẽ render bằng JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="margin-top: 16px; text-align: right;">
+                                <button class="btn-primary" id="btn-save-schedule">💾 Chốt & Lưu Lịch Làm Việc</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Employees -->
+                    <div id="tab-employees" class="tab-content hidden">
+                        <div style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                                <h3>📋 Danh Sách Nhân Sự Hiện Có</h3>
+                                <button type="button" class="btn-primary" onclick="openAddEmpModal()" style="width: auto; padding: 10px 20px;">➕ Thêm Nhân Viên Mới</button>
+                            </div>
+                            
+                            <!-- Search & Filter Panels -->
+                            <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                                <input type="text" id="search-emp-name" class="form-input" placeholder="🔍 Tìm kiếm theo tên hoặc mã..." style="flex: 2; min-width: 200px; padding: 10px 16px;">
+                                <select id="filter-emp-branch" class="form-input" style="flex: 1; min-width: 150px; padding: 10px 16px;">
+                                    <option value="all">Tất cả chi nhánh</option>
+                                </select>
+                            </div>
+
+                            <ul id="all-employees-list" class="employee-list">
+                                <!-- Danh sách js render -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Modal Thêm Nhân Sự Mới -->
+                    <div id="add-employee-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px);">
+                        <div class="glass-card" style="width: 100%; max-width: 450px; margin: 20px; text-align: left;">
+                            <h3 style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                                ➕ Thêm Nhân Viên Mới
+                                <button type="button" onclick="closeAddEmpModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                            </h3>
+                            <form id="add-employee-form">
+                                <div class="form-group">
+                                    <label class="form-label">Mã nhân viên (SĐT / Tên viết tắt)</label>
+                                    <input type="text" id="new-emp-code" class="form-input" required placeholder="VD: NV01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Họ và Tên</label>
+                                    <input type="text" id="new-emp-name" class="form-input" required placeholder="VD: Nguyễn Văn A">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Mã PIN (4-6 số)</label>
+                                    <input type="password" id="new-emp-pin" class="form-input" required placeholder="****">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Chi nhánh</label>
+                                    <select id="new-emp-branch" class="form-input" required>
+                                        <option value="">Đang tải...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Chức vụ</label>
+                                    <select id="new-emp-position" class="form-input" required>
+                                        <option value="">Đang tải...</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                                    <button type="button" class="btn-secondary" onclick="closeAddEmpModal()" style="flex: 1;">Hủy</button>
+                                    <button type="submit" class="btn-primary" style="flex: 1;">Tạo Nhân Viên</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Modal Chỉnh Sửa Nhân Sự -->
+                    <div id="edit-employee-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px);">
+                        <div class="glass-card" style="width: 100%; max-width: 450px; margin: 20px; text-align: left;">
+                            <h3 style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                                ✏️ Chỉnh Sửa Nhân Viên
+                                <button type="button" onclick="closeEditModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                            </h3>
+                            <form id="edit-employee-form">
+                                <input type="hidden" id="edit-emp-id">
+                                <div class="form-group">
+                                    <label class="form-label">Họ và Tên</label>
+                                    <input type="text" id="edit-emp-name" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Mã Nhân Viên</label>
+                                    <input type="text" id="edit-emp-code" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Chi nhánh</label>
+                                    <select id="edit-emp-branch" class="form-input" required>
+                                        <!-- JS Render -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Chức vụ</label>
+                                    <select id="edit-emp-position" class="form-input" required>
+                                        <!-- JS Render -->
+                                    </select>
+                                </div>
+                                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                                    <button type="button" class="btn-secondary" onclick="closeEditModal()" style="flex: 1;">Hủy</button>
+                                    <button type="submit" class="btn-primary" style="flex: 1;">Lưu Thay Đổi</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Branches -->
+                    <div id="tab-branches" class="tab-content hidden">
+                        <div style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                                <h3>🏬 Danh Sách Chi Nhánh Chuỗi</h3>
+                                <button type="button" class="btn-primary" onclick="openAddBranchModal()" style="width: auto; padding: 10px 20px;">➕ Thêm Chi Nhánh Mới</button>
+                            </div>
+                            <ul id="all-branches-list" class="employee-list">
+                                <!-- JS Render -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Modal Thêm Chi Nhánh Mới -->
+                    <div id="add-branch-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px);">
+                        <div class="glass-card" style="width: 100%; max-width: 450px; margin: 20px; text-align: left;">
+                            <h3 style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                                ➕ Thêm Chi Nhánh Mới
+                                <button type="button" onclick="closeAddBranchModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                            </h3>
+                            <form id="add-branch-form">
+                                <div class="form-group">
+                                    <label class="form-label">Tên Chi Nhánh</label>
+                                    <input type="text" id="new-branch-name" class="form-input" required placeholder="VD: CafeBin Quận 1">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Địa Chỉ</label>
+                                    <input type="text" id="new-branch-address" class="form-input" placeholder="VD: 123 Nguyễn Huệ, Q1">
+                                </div>
+                                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                                    <button type="button" class="btn-secondary" onclick="closeAddBranchModal()" style="flex: 1;">Hủy</button>
+                                    <button type="submit" class="btn-primary" style="flex: 1;">Tạo Chi Nhánh</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Positions -->
+                    <div id="tab-positions" class="tab-content hidden">
+                        <div style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                                <h3>💼 Danh Sách Chức Vụ</h3>
+                                <button type="button" class="btn-primary" onclick="openAddPositionModal()" style="width: auto; padding: 10px 20px;">➕ Thêm Chức Vụ Mới</button>
+                            </div>
+                            <ul id="all-positions-list" class="employee-list">
+                                <!-- JS Render -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Modal Thêm Chức Vụ Mới -->
+                    <div id="add-position-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px);">
+                        <div class="glass-card" style="width: 100%; max-width: 450px; margin: 20px; text-align: left;">
+                            <h3 style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                                ➕ Thêm Chức Vụ Mới
+                                <button type="button" onclick="closeAddPositionModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                            </h3>
+                            <form id="add-position-form">
+                                <div class="form-group">
+                                    <label class="form-label">Tên Chức Vụ</label>
+                                    <input type="text" id="new-pos-name" class="form-input" required placeholder="VD: Pha chế">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Quyền Hạn Hệ Thống</label>
+                                    <select id="new-pos-role" class="form-input" required>
+                                        <option value="nhanvien">Nhân viên (Chỉ xem lịch & chấm công)</option>
+                                        <option value="manager">Quản lý (Quản lý chi nhánh)</option>
+                                        <option value="admin">Admin (Toàn quyền hệ thống)</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                                    <button type="button" class="btn-secondary" onclick="closeAddPositionModal()" style="flex: 1;">Hủy</button>
+                                    <button type="submit" class="btn-primary" style="flex: 1;">Tạo Chức Vụ</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Modal Chỉnh Sửa Chức Vụ -->
+                    <div id="edit-position-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px);">
+                        <div class="glass-card" style="width: 100%; max-width: 450px; margin: 20px; text-align: left;">
+                            <h3 style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                                ✏️ Chỉnh Sửa Chức Vụ
+                                <button type="button" onclick="closeEditPositionModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                            </h3>
+                            <form id="edit-position-form">
+                                <input type="hidden" id="edit-pos-id">
+                                <div class="form-group">
+                                    <label class="form-label">Tên Chức Vụ</label>
+                                    <input type="text" id="edit-pos-name" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Quyền Hạn Hệ Thống</label>
+                                    <select id="edit-pos-role" class="form-input" required>
+                                        <option value="nhanvien">Nhân viên (Chỉ xem lịch & chấm công)</option>
+                                        <option value="manager">Quản lý (Quản lý chi nhánh)</option>
+                                        <option value="admin">Admin (Toàn quyền hệ thống)</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                                    <button type="button" class="btn-secondary" onclick="closeEditPositionModal()" style="flex: 1;">Hủy</button>
+                                    <button type="submit" class="btn-primary" style="flex: 1;">Lưu Thay Đổi</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Announcements -->
+                    <div id="tab-announcements" class="tab-content hidden">
+                        <div class="dashboard-grid">
+                            <div>
+                                <h3 style="margin-bottom: 16px;">📢 Đăng Thông Báo Mới</h3>
+                                <form id="add-announcement-form">
+                                    <div class="form-group">
+                                        <label class="form-label">Tiêu đề</label>
+                                        <input type="text" id="ann-title" class="form-input" required placeholder="VD: Họp định kỳ">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Nội dung</label>
+                                        <input type="text" id="ann-content" class="form-input" required placeholder="Nội dung thông báo...">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Mức độ</label>
+                                        <select id="ann-level" class="form-input">
+                                            <option value="info">Thường (Xanh)</option>
+                                            <option value="warning">Lưu ý (Vàng)</option>
+                                            <option value="danger">Khẩn cấp (Đỏ)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="ann-branch-group">
+                                        <label class="form-label">Hiển thị cho</label>
+                                        <select id="ann-branch" class="form-input">
+                                            <option value="all">Tất cả chi nhánh (Toàn hệ thống)</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn-primary">Phát Thông Báo</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Shift Register Screen -->
+        <div id="shift-register-screen" class="screen hidden">
+            <div class="glass-card">
+                <div class="card-header-flex" style="margin-bottom: 24px;">
+                    <h2>📝 Đăng Ký Ca Làm Việc</h2>
+                    <button class="btn-secondary back-to-home-btn">← Quay lại</button>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <label class="form-label">Chọn Tuần Đăng Ký (Bắt đầu từ Thứ 2):</label>
+                    <div style="display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <button type="button" class="btn-small btn-secondary" onclick="changeWeek('register-start-date', -7, loadRegisterMatrix)" style="padding: 8px 12px; font-weight: bold;">◀ Tuần Trước</button>
+                        <input type="date" id="register-start-date" class="form-input" style="width: auto; border: none; background: transparent; padding: 4px 8px; text-align: center;" readonly>
+                        <button type="button" class="btn-small btn-secondary" onclick="changeWeek('register-start-date', 7, loadRegisterMatrix)" style="padding: 8px 12px; font-weight: bold;">Tuần Sau ▶</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="matrix-table" id="register-matrix">
+                        <thead>
+                            <tr id="register-matrix-head">
+                                <th>Ca Làm Việc</th>
+                                <!-- T2, T3... JS -->
+                            </tr>
+                        </thead>
+                        <tbody id="register-matrix-body">
+                            <!-- Dữ liệu JS -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="btn-primary" id="btn-submit-registration">Gửi Đăng Ký Ca</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Screen -->
+        <div id="schedule-screen" class="screen hidden">
+            <div class="glass-card">
+                <div class="card-header-flex" style="margin-bottom: 24px;">
+                    <h2>🗓️ Lịch Làm Việc Chính Thức</h2>
+                    <button class="btn-secondary back-to-home-btn">← Quay lại</button>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label class="form-label">Chọn Tuần Xem Lịch (Bắt đầu từ Thứ 2):</label>
+                        <div style="display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                            <button type="button" class="btn-small btn-secondary" onclick="changeWeek('schedule-start-date', -7, loadScheduleMatrix)" style="padding: 8px 12px; font-weight: bold;">◀ Tuần Trước</button>
+                            <input type="date" id="schedule-start-date" class="form-input" style="width: auto; border: none; background: transparent; padding: 4px 8px; text-align: center;" readonly>
+                            <button type="button" class="btn-small btn-secondary" onclick="changeWeek('schedule-start-date', 7, loadScheduleMatrix)" style="padding: 8px 12px; font-weight: bold;">Tuần Sau ▶</button>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="button" id="btn-toggle-view-all-schedule" class="btn-secondary" style="width: auto; padding: 8px 16px;">👥 Xem tất cả đồng nghiệp</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="matrix-table schedule-matrix" id="schedule-matrix">
+                        <thead>
+                            <tr id="schedule-matrix-head">
+                                <th>Ca Làm Việc</th>
+                                <!-- T2, T3... JS -->
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-matrix-body">
+                            <!-- Dữ liệu JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Sắp Xếp Ca Làm (Popup chọn nhân sự đã đăng ký) -->
+        <div id="arrange-employees-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px);">
+            <div class="glass-card" style="width: 100%; max-width: 450px; margin: 20px; text-align: left;">
+                <h3 style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    👥 Nhân Sự Đăng Ký Ca
+                    <button type="button" onclick="closeArrangeModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                </h3>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;" id="arrange-modal-subtitle">Ca Sáng - Thứ 2 (28/07)</p>
+                <div style="max-height: 250px; overflow-y: auto; margin-bottom: 20px;" id="arrange-modal-employees-list">
+                    <!-- JS Render checkboxes -->
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" class="btn-secondary" onclick="closeArrangeModal()" style="flex: 1;">Đóng</button>
+                    <button type="button" class="btn-primary" onclick="confirmArrangeSelection()" style="flex: 1;">Xác Nhận</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Chấm Công Vào Ca -->
+        <div id="clock-in-modal" class="modal hidden">
+            <div class="modal-content" style="max-width: 480px;">
+                <h3 style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    ⏱️ Bắt Đầu Chấm Công Vào Ca
+                    <button type="button" onclick="closeClockInModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                </h3>
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Chọn Ca Làm Việc Hôm Nay</label>
+                    <select id="clockin-shift-select" class="form-input" required>
+                        <!-- Dynamic Shifts -->
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Tọa Độ Vị Trí (GPS)</label>
+                    <div id="clockin-gps-status" style="font-size: 13px; color: var(--accent-gold); background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+                        Đang lấy vị trí GPS...
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Chụp Ảnh Chân Dung Chấm Công</label>
+                    <div style="position: relative; border-radius: 8px; overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1);">
+                        <video id="clockin-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        
+                        <!-- Live Watermark Overlay -->
+                        <div id="clockin-video-overlay" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.85); color: #fff; padding: 10px 14px; font-weight: bold; z-index: 5; backdrop-filter: blur(4px); border-top: 1px solid rgba(255,255,255,0.1);">
+                            <div style="font-size: 13px; color: #fff;">⏱️ Thời gian: <span id="live-overlay-time">--:--:--</span></div>
+                            <div style="font-size: 12px; color: #34d399; margin-top: 2px;" id="live-overlay-gps">📍 GPS: Đang xác định vị trí...</div>
+                        </div>
+
+                        <canvas id="clockin-canvas" style="display: none;"></canvas>
+                        <img id="clockin-preview" style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 10;">
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 10px;">
+                        <button type="button" id="btn-clockin-capture" class="btn-primary" style="flex: 1; padding: 10px;">📸 Chụp Ảnh</button>
+                        <button type="button" id="btn-clockin-recapture" class="btn-secondary hidden" style="flex: 1; padding: 10px;">🔄 Chụp Lại</button>
+                        <input type="file" id="clockin-file-input" accept="image/*" capture="user" style="display: none;">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button type="button" class="btn-secondary" onclick="closeClockInModal()" style="flex: 1;">Hủy</button>
+                    <button type="button" id="btn-clockin-confirm" class="btn-primary" style="flex: 1;" disabled>Xác Nhận Vào Ca</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Feature Placeholder Screen for Testing -->
+        <div id="feature-placeholder-screen" class="screen hidden">
+            <div class="glass-card" style="text-align: center; padding: 50px 24px;">
+                <div style="font-size: 48px; margin-bottom: 16px;" id="placeholder-icon">🚀</div>
+                <h2 id="placeholder-title" style="margin-bottom: 8px;">Phân Hệ HRM</h2>
+                <p style="color: var(--text-secondary); max-width: 400px; margin: 0 auto 24px;" id="placeholder-desc">
+                    Tính năng đang được kích hoạt trong khung ứng dụng offline.
+                </p>
+                <button class="btn-primary back-to-home-btn" style="max-width: 220px; margin: 0 auto;">← Trở về Trang Chủ</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module" src="/js/app.js?v=1.2"></script>
+</body>
+</html>
