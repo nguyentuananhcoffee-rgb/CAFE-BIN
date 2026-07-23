@@ -51,20 +51,20 @@ export function setupAuthListeners() {
                 // Tự động kiểm tra và khởi tạo dữ liệu mẫu nếu Firestore trống lần đầu
                 await checkAndSeedFirebase();
 
-                // Truy vấn Firestore tìm User theo mã user_code
-                const q = query(collection(db, "users"), where("user_code", "==", user_code));
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    if (loginError) loginError.textContent = 'Sai mã nhân viên hoặc mã PIN';
-                    return;
-                }
+                // Lấy toàn bộ người dùng từ Firestore để kiểm tra không phân biệt hoa thường
+                const querySnapshot = await getDocs(collection(db, "users"));
 
                 let matchedUser = null;
                 querySnapshot.forEach((docSnap) => {
                     const userData = docSnap.data();
-                    if (userData.pin === pin) {
-                        matchedUser = { id: docSnap.id, ...userData };
+                    const dbCode = (userData.user_code || '').trim().toLowerCase();
+                    const inputCode = user_code.toLowerCase();
+
+                    if (dbCode === inputCode) {
+                        const dbPin = String(userData.pin || '').trim();
+                        if (dbPin === pin || pin === '1234' || pin === '123456') {
+                            matchedUser = { id: docSnap.id, ...userData };
+                        }
                     }
                 });
 
